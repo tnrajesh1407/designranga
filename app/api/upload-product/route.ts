@@ -1,7 +1,6 @@
 // app/api/upload-product/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { uploadMediaImage, createWooProduct } from '@/lib/woocommerce'
-import { uploadZipViaFtp } from '@/lib/ftpUpload'
+import { uploadMediaImage, uploadZipFile, createWooProduct } from '@/lib/woocommerce'
 import { processImage } from '@/lib/imageProcessor'
 import { GeneratedCopy } from '@/types'
 
@@ -15,16 +14,14 @@ const CATEGORY_NAMES: Record<string, string> = {
 
 export async function POST(req: NextRequest) {
   try {
-    // Use FormData (multipart) instead of JSON — avoids Vercel's 4.5MB JSON body limit.
-    // FormData uploads are streamed and not subject to the same cap.
     const formData = await req.formData()
 
-    const imageFile = formData.get('image') as File | null
-    const copyRaw   = formData.get('copy') as string | null
-    const fileName  = formData.get('fileName') as string | null
-    const price     = formData.get('price') as string | null
+    const imageFile   = formData.get('image') as File | null
+    const copyRaw     = formData.get('copy') as string | null
+    const fileName    = formData.get('fileName') as string | null
+    const price       = formData.get('price') as string | null
     const categorySlug = formData.get('categorySlug') as string | null
-    const mode      = (formData.get('mode') as string | null) ?? 'social'
+    const mode        = (formData.get('mode') as string | null) ?? 'social'
 
     if (!imageFile || !copyRaw || !fileName || !price || !categorySlug) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -32,7 +29,7 @@ export async function POST(req: NextRequest) {
 
     const copy = JSON.parse(copyRaw) as GeneratedCopy
 
-    // Convert File → base64 for the existing imageProcessor interface
+    // Convert File → base64 for the imageProcessor interface
     const arrayBuf = await imageFile.arrayBuffer()
     const imageBase64 = Buffer.from(arrayBuf).toString('base64')
 
@@ -46,8 +43,8 @@ export async function POST(req: NextRequest) {
       copy.altText
     )
 
-    // Step 3 — Upload ZIP directly to Bluehost via FTP (bypasses Cloudflare timeout)
-    const zipFileUrl = await uploadZipViaFtp(
+    // Step 3 — Upload ZIP directly to Bluehost IP, bypassing Cloudflare 524 timeout
+    const zipFileUrl = await uploadZipFile(
       processed.zipBase64,
       processed.zipFileName
     )

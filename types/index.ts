@@ -32,6 +32,10 @@ export interface ProductDetails {
   imageFile: File | null
   imageBase64: string
   imageName: string
+  /** Raw prompt the user typed — describes the specific image content */
+  originalPrompt?: string
+  /** AI-enhanced version of the prompt — richer detail for copy generation */
+  enhancedPrompt?: string
 }
 
 export interface GeneratedCopy {
@@ -69,3 +73,13 @@ export type UploadStep =
   | 'attaching-zip'
   | 'done'
   | 'error'
+
+/**
+ * Top-level app stage that drives which panel the user sees.
+ *
+ * prompt  → user types a text prompt
+ * generating → Replicate is running
+ * review  → image returned, user approves or regenerates
+ * details → image approved, user fills metadata + generates SEO copy + publishes
+ */
+export type AppStage = 'prompt' | 'generating' | 'review' | 'details'

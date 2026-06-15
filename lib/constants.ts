@@ -65,3 +65,48 @@ export const PRICES = [
 ]
 
 export const WATERMARK_TEXT = 'designranga.com'
+
+// ── Tags applied to every product regardless of festival ─────────────────
+export const DEFAULT_TAGS = [
+  'Digital Download',
+  'Facebook',
+  'Instagram',
+  'Instagram Story',
+  'print',
+  'Telugu Wishes',
+  'WhatsApp',
+  'YouTube Thumbnail',
+] as const
+
+// ── Festival / life-event specific tags ───────────────────────────────────
+// Keyed by the festival `value` used in FESTIVALS above.
+// Each entry lists only the tags relevant to that occasion.
+// navratri, christmas, new_year, biker_developer, general → DEFAULT_TAGS only.
+export const FESTIVAL_TAGS: Record<string, string[]> = {
+  // ── Telugu Festivals ────────────────────────────────────────────────
+  ugadi:             ['Ugadi', 'ఉగాది'],
+  dasara:            ['Dasara', 'విజయదశమి'],
+  holi:              ['holi', 'హోలీ'],
+  sankranti:         ['Sankranti', 'సంక్రాంతి'],
+  diwali:            ['Diwali', 'దీపావళి'],
+  ganesh_chaturthi:  ['Ganesh Chaturthi', 'vinayaka chavithi', 'వినాయక చవితి'],
+  raksha_bandhan:    ['raksha bandhan', 'రక్షా బంధన్'],
+  // ── Life Events ─────────────────────────────────────────────────────
+  seemantham:        ['seemantham', 'సీమంతం', 'babyshower'],
+  gruhapravesha:     ['gruhapravesam'],
+  annaprashana:      ['annaprashana'],
+  upanayanam:        ['upanayanam'],
+  wedding_anniversary: ['wedding_anniversary'],
+  birthday:          ['birthday'],
+  shop_inauguration: ['shop_inauguration'],
+}
+
+/**
+ * Returns the full tag set for a product:
+ * DEFAULT_TAGS + any festival-specific tags for the given festival value.
+ */
+export function getProductTags(festivalValue: string): string[] {
+  const festivalSpecific = FESTIVAL_TAGS[festivalValue] ?? []
+  // Use a Set to avoid duplicates, then spread back to array
+  return [...new Set([...DEFAULT_TAGS, ...festivalSpecific])]
+}
